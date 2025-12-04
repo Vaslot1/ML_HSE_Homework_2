@@ -1,0 +1,15 @@
+C:\Users\Vaslot\AppData\Local\Temp\marimo_1772\__marimo__cell_emfo_.py:11: FutureWarning:
+
+Passing `palette` without assigning `hue` is deprecated and will be removed in v0.14.0. Assign the `y` variable to `hue` and set `legend=False` for the same effect.
+
+  sns.barplot(data=importances, x='importance', y='feature', palette='viridis', ax=ax)
+
+Traceback (most recent call last):
+  File "F:\Projects\Homework2\Lib\site-packages\marimo\_runtime\executor.py", line 139, in execute_cell
+    return eval(cell.last_expr, glbls)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Vaslot\AppData\Local\Temp\marimo_1772\__marimo__cell_emfo_.py", line 19, in <module>
+    mo.plt(fig)
+    ^^^^^^
+AttributeError: module 'marimo' has no attribute 'plt'
+

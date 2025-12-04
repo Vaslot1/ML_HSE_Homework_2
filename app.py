@@ -44,10 +44,11 @@ def _(mo):
 
 
 @app.cell
-def _(pd):
-    # Load Data from the 'public' directory.
-    # This relative path will be resolved by the browser when run via WASM.
-    data = pd.read_csv("public/computer_prices_all.csv")
+def _(mo, pd):
+    # Path to the data file, per user instruction.
+    # Note: mo.notebook_location() is not a standard marimo function and may error.
+    data_path = mo.notebook_location() / "public" / "computer_prices_all.csv"
+    data = pd.read_csv(data_path)
     return (data,)
 
 
