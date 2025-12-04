@@ -45,8 +45,15 @@ def _(mo):
 
 @app.cell
 def _(pd):
-    # Load Data (Ensure 'computer_prices_all.csv' is in the same folder)
-    data = pd.read_csv("computer_prices_all.csv")
+    from marimo.experimental.embed import embed_file
+    from io import StringIO
+
+    # Embed the CSV file content at export-time
+    # The decode() is necessary because embed_file returns bytes.
+    csv_contents = embed_file("computer_prices_all.csv").decode("utf-8")
+    
+    # Read the embedded content from memory
+    data = pd.read_csv(StringIO(csv_contents))
     return (data,)
 
 
