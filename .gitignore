@@ -5,6 +5,8 @@ ENV/
 env/
 Lib/
 Scripts/
+pyvenv.cfg
+share/
 
 # Python cache
 __pycache__/
@@ -17,3 +19,19 @@ __pycache__/
 # Marimo temp
 .marimo-temp/
 __marimo__/
+
+# Build artifacts
+
+# Other files
+*.ipynb
+*.txt
+*.md
+*.png
+*.ico
+*.json
+*.webmanifest
+
+# Allow necessary files
+!README.md
+!requirements.txt
+!instr.md

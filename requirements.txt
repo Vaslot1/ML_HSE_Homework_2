@@ -1,7 +1,7 @@
 pandas
 numpy
-scikit-learn
-xgboost
+scikit-learn==1.6.1
+xgboost==3.1.2
 matplotlib
 seaborn
-marimo
+marimo==0.18.2
