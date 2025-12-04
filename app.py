@@ -114,17 +114,27 @@ def _(data, pd):
 
 @app.cell
 def _(KFold, USD_TO_RUB_RATE, X, XGBRegressor, cross_val_score, mo, np, y):
-    # Perform Cross-Validation
     model_for_cv = XGBRegressor(n_estimators=100, random_state=42, n_jobs=-1)
-    kfold = KFold(n_splits=5, shuffle=True, random_state=42)
+    kfold1 = KFold(n_splits=5, shuffle=True, random_state=42)
 
-    # Using neg_mean_absolute_error as the scoring metric
-    scores = cross_val_score(model_for_cv, X, y, cv=kfold, scoring='neg_mean_absolute_error')
+    mae_scores = []
 
-    # Convert scores to positive and calculate mean and std
-    mae_scores_usd = -scores
-    mean_mae_usd = np.mean(mae_scores_usd)
-    std_mae_usd = np.std(mae_scores_usd)
+    for train_index, test_index in kfold1.split(X):
+        # ⬇️ ИСПРАВЛЕНИЕ: добавьте .iloc здесь
+        X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+
+        # Если y — это Series, .iloc тоже работает и является более надежным вариантом
+        y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+
+        model_for_cv.fit(X_train, y_train)
+        preds = model_for_cv.predict(X_test)
+
+        mae = np.mean(np.abs(preds - y_test))
+        mae_scores.append(mae)
+
+    mae_scores = np.array(mae_scores)
+    mean_mae_usd = mae_scores.mean()
+    std_mae_usd = mae_scores.std()
 
     mean_mae_rub = mean_mae_usd * USD_TO_RUB_RATE
     std_mae_rub = std_mae_usd * USD_TO_RUB_RATE
@@ -143,7 +153,7 @@ def _(X, XGBRegressor, y):
     # Train Final Model on All Data
     # This model is used for the interactive predictions below
     model = XGBRegressor(n_estimators=100, random_state=42, n_jobs=-1)
-    model.fit(X, y)
+    _ = model.fit(X, y)
     return (model,)
 
 
