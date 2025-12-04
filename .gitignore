@@ -1,0 +1,19 @@
+# Virtual Environment
+venv/
+.venv/
+ENV/
+env/
+Lib/
+Scripts/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE files
+.idea/
+.vscode/
+
+# Marimo temp
+.marimo-temp/
+__marimo__/
