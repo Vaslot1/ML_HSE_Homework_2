@@ -45,10 +45,18 @@ def _(mo):
 
 @app.cell
 def _(mo, pd):
-    # Path to the data file, per user instruction.
-    # Note: mo.notebook_location() is not a standard marimo function and may error.
-    data_path = mo.notebook_location() / "public" / "computer_prices_all.csv"
-    data = pd.read_csv(data_path)
+    # Data loading logic exactly as provided in task.txt
+    try:
+        data_path = str(mo.notebook_location() / "public" / "computer_prices_all.csv")
+        data = pd.read_csv(data_path, compression=None)
+    except:
+        # fallback для Pyodide
+        import requests
+        import io
+        url = f"{mo.notebook_location()}/public/computer_prices_all.csv"
+        response = requests.get(url)
+        data = pd.read_csv(io.StringIO(response.text))
+        
     return (data,)
 
 
