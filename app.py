@@ -4,7 +4,6 @@ __generated_with = "0.18.1"
 app = marimo.App()
 
 with app.setup:
-    # Initialization code that runs before all other cells
     pass
 
 
@@ -45,12 +44,10 @@ def _(mo):
 
 @app.cell
 def _(mo, pd):
-    # Data loading logic exactly as provided in task.txt
     try:
         data_path = str(mo.notebook_location() / "public" / "computer_prices_all.csv")
         data = pd.read_csv(data_path, compression=None)
     except:
-        # fallback для Pyodide
         import requests
         import io
         url = f"{mo.notebook_location()}/public/computer_prices_all.csv"
@@ -120,10 +117,8 @@ def _(KFold, USD_TO_RUB_RATE, X, XGBRegressor, cross_val_score, mo, np, y):
     mae_scores = []
 
     for train_index, test_index in kfold1.split(X):
-        # ⬇️ ИСПРАВЛЕНИЕ: добавьте .iloc здесь
         X_train, X_test = X.iloc[train_index], X.iloc[test_index]
 
-        # Если y — это Series, .iloc тоже работает и является более надежным вариантом
         y_train, y_test = y.iloc[train_index], y.iloc[test_index]
 
         model_for_cv.fit(X_train, y_train)
@@ -150,8 +145,6 @@ def _(KFold, USD_TO_RUB_RATE, X, XGBRegressor, cross_val_score, mo, np, y):
 
 @app.cell
 def _(X, XGBRegressor, y):
-    # Train Final Model on All Data
-    # This model is used for the interactive predictions below
     model = XGBRegressor(n_estimators=100, random_state=42, n_jobs=-1)
     _ = model.fit(X, y)
     return (model,)
@@ -233,17 +226,15 @@ def _(
         display_type_dropdown,
     ])
 
-    # Create an accordion for each group and stack them horizontally
     dashboard = mo.hstack([
-        mo.accordion({"Основные": group_general}),
-        mo.accordion({"Процессор": group_cpu}),
-        mo.accordion({"Графика и память": group_gpu_ram}),
-        mo.accordion({"Дисплей": group_display})
+        mo.accordion({"General": group_general}),
+        mo.accordion({"Processor": group_cpu}),
+        mo.accordion({"Graphics and Memory": group_gpu_ram}),
+        mo.accordion({"Display": group_display})
     ])
 
     mo.callout(dashboard)
 
-    # Return all controls
     return (
         brand_dropdown,
         cpu_base_ghz_slider,
@@ -314,7 +305,6 @@ def _(
     }
     df_input = pd.DataFrame(input_data)
 
-    # 2. Apply all encodings on the fly
     # Target Encoding
     df_input['brand_encoded'] = df_input['brand'].map(brand_means)
     df_input['form_factor_encoded'] = df_input['form_factor'].map(form_factor_means)
@@ -322,7 +312,6 @@ def _(
     df_input['resolution_encoded'] = df_input['resolution'].map(resolution_order)
     df_input['display_type_encoded'] = df_input['display_type'].map(display_order)
 
-    # 3. Align to Training Columns and fill known values
     df_ready = pd.DataFrame(0, index=[0], columns=feature_columns)
     for col in df_input.columns:
         if col in df_ready.columns:
@@ -332,7 +321,6 @@ def _(
         if encoded_col_name in df_input.columns and encoded_col_name in df_ready.columns:
             df_ready[encoded_col_name] = df_input[encoded_col_name].values
 
-    # 4. Manually apply One-Hot Encoding for prediction
     one_hot_features = {
         'os': os_dropdown.value,
         'cpu_brand': cpu_brand_dropdown.value,
@@ -344,7 +332,6 @@ def _(
         if col_name in df_ready.columns:
             df_ready[col_name] = 1
 
-    # 5. Predict in USD and convert to RUB
     prediction_usd = model.predict(df_ready[feature_columns].values)[0]
     prediction = prediction_usd * USD_TO_RUB_RATE
     return (prediction,)
@@ -362,11 +349,11 @@ def _(mo, prediction):
 def _(mo, prediction):
     budget = 350000
     if prediction <= budget:
-        budget_message = f"🎉 **Отлично!** Сборка укладывается в ваш бюджет в **{budget:,.0f} RUB**."
+        budget_message = f"🎉 **Excellent!** The build fits within your budget of **{budget:,.0f} RUB**."
         budget_kind = "success"
     else:
         over_by = prediction - budget
-        budget_message = f"🤔 **Превышение бюджета.** Эта сборка на **{over_by:,.0f} RUB** дороже вашего бюджета."
+        budget_message = f"🤔 **Over budget.** This build is **{over_by:,.0f} RUB** more expensive than your budget."
         budget_kind = "danger"
 
     mo.callout(budget_message, kind=budget_kind)
@@ -387,10 +374,8 @@ def _(feature_columns, model, pd):
 def _(importances, mo, plt, sns):
     mo.md("### 📊 What Drives the Price?")
 
-    # Plot
     fig, ax = plt.subplots(figsize=(10, 6))
 
-    # Fix for seaborn FutureWarning: assign 'y' to 'hue' and hide legend
     sns.barplot(
         data=importances,
         x='importance',
@@ -406,7 +391,6 @@ def _(importances, mo, plt, sns):
     ax.set_ylabel('Feature')
     plt.tight_layout()
 
-    # The 'fig' object is the last expression, so Marimo will display it.
     fig
     return
 
@@ -420,13 +404,13 @@ def _(budget, importances, mo, prediction):
 
     # Simple recommendation logic
     if prediction > budget:
-        rec_message = f"Чтобы снизить стоимость, попробуйте уменьшить параметр с наибольшим влиянием на цену: **{top_feature}**."
+        rec_message = f"To reduce the cost, try decreasing the parameter with the biggest impact on price: **{top_feature}**."
         rec_kind = "warn"
     elif budget - prediction < 20000: # If very close to budget
-        rec_message = "Вы почти у цели! Конфигурация отлично сбалансирована по цене."
+        rec_message = "You're almost there! The configuration is well-balanced for the price."
         rec_kind = "info"
     else:
-        rec_message = f"У вас есть запас в бюджете. Вы можете улучшить самый влиятельный параметр: **{top_feature}**, чтобы получить больше производительности."
+        rec_message = f"You have room in your budget. You can improve the most influential parameter: **{top_feature}** to get more performance."
         rec_kind = "success"
 
     mo.callout(rec_message, kind=rec_kind)
